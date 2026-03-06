@@ -3,6 +3,8 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerAllHandlers } from './ipc/handlers'
 import { cleanupWatcher } from './ipc/watcher'
+import { runMigrations } from './db/schema'
+import { closeDb } from './db/connection'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -47,6 +49,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  runMigrations()
   registerAllHandlers()
   createWindow()
 
@@ -57,6 +60,7 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   cleanupWatcher()
+  closeDb()
   if (process.platform !== 'darwin') {
     app.quit()
   }
